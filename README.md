@@ -30,7 +30,7 @@ $ pip install -r requirements.txt
 #### Usage
 
 ```bash
-$ python ./checkin.py CONFIRMATION_NUMBER FIRST_NAME LAST_NAME
+$ python ./checkin.py -c CONFIRMATION_NUMBER -fn FIRST_NAME -ln LAST_NAME
 ```
 
 ### Docker
@@ -39,5 +39,5 @@ $ python ./checkin.py CONFIRMATION_NUMBER FIRST_NAME LAST_NAME
 
 ```bash
 $ sudo docker build -t swcheckin ./
-$ sudo docker run -ti swcheckin /tmp/checkin.py CONFIRMATION_NUMBER FIRST_NAME LAST_NAME
+$ sudo docker run -ti swcheckin /tmp/checkin.py -c CONFIRMATION_NUMBER -fn FIRST_NAME -ln LAST_NAME
 ```

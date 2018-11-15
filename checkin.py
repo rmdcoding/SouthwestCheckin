@@ -1,21 +1,8 @@
 #!/usr/bin/env python
-"""Southwest Checkin.
 
-Usage:
-  checkin.py CONFIRMATION_NUMBER FIRST_NAME LAST_NAME [-v | --verbose]
-  checkin.py (-h | --help)
-  checkin.py --version
-
-Options:
-  -h --help     Show this screen.
-  -v --verbose  Show debugging information.
-  --version     Show version.
-
-"""
 from datetime import datetime
 from datetime import timedelta
 from dateutil.parser import parse
-from docopt import docopt
 from geopy import geocoders
 from math import trunc
 from tzlocal import get_localzone
@@ -24,6 +11,7 @@ import requests
 import sys
 import time
 import json
+import argparse
 
 API_KEY = 'l7xxb3dcccc4a5674bada48fc6fcf0946bc8'
 USER_EXPERIENCE_KEY = 'AAAA3198-4545-46F4-9A05-BB3E868BEFF5'
@@ -35,9 +23,32 @@ MAX_ATTEMPTS = 40
 # Pulled from proxying the Southwest iOS App
 headers = {'Host': 'mobile.southwest.com', 'Content-Type': 'application/json', 'X-API-Key': API_KEY, 'X-User-Experience-Id': USER_EXPERIENCE_KEY, 'Accept': '*/*'}
 
-# You might ask yourself, "Why the hell does this exist?"
-# Basically, there sometimes appears a "hiccup" in Southwest where things
-# aren't exactly available 24-hours before, so we try a few times
+def get_args():
+    parser = argparse.ArgumentParser(
+        description='Southwest Automatic Checkin',
+        epilog='example: /checkin.py -c XXXXXX -ln "smith" -fn "john"'
+    )
+
+    parser.add_argument('-c', '--confirmation',
+                        required=True,
+                        action='store',
+                        help='Flight confirmation/reservation number.')
+
+    parser.add_argument('-ln', '--last_name',
+                        required=True,
+                        action='store',
+                        help='Last name of passenger.')
+
+    parser.add_argument('-fn','--first_name',
+                        required=True,
+                        action='store',
+                        help='First name of passenger.')
+
+    args = parser.parse_args()
+
+    return args
+
+
 def safe_request(url, body=None):
     attempts = 0
     while True:
@@ -55,16 +66,19 @@ def safe_request(url, body=None):
             continue
         return data
 
+
 def lookup_existing_reservation(number, first, last):
     # Find our existing record
     url = "{}mobile-misc/v1/mobile-misc/page/view-reservation/{}?first-name={}&last-name={}".format(BASE_URL, number, first, last)
     data = safe_request(url)
     return data['viewReservationViewPage']
 
+
 def get_checkin_data(number, first, last):
     url = "{}mobile-air-operations/v1/mobile-air-operations/page/check-in/{}?first-name={}&last-name={}".format(BASE_URL, number, first, last)
     data = safe_request(url)
     return data['checkInViewReservationPage']
+
 
 def checkin(number, first, last):
     data = get_checkin_data(number, first, last)
@@ -72,6 +86,7 @@ def checkin(number, first, last):
     url = "{}mobile-air-operations{}".format(BASE_URL, info_needed['href'])
     print("Attempting check-in...")
     return safe_request(url, info_needed['body'])['checkInConfirmationPage']
+
 
 def schedule_checkin(flight_time, number, first, last):
     checkin_time = flight_time - timedelta(days=1)
@@ -89,6 +104,7 @@ def schedule_checkin(flight_time, number, first, last):
     for flight in data['flights']:
         for doc in flight['passengers']:
             print("{} got {}{}!".format(doc['name'], doc['boardingGroup'], doc['boardingPosition']))
+
 
 def auto_checkin(reservation_number, first_name, last_name):
     body = lookup_existing_reservation(reservation_number, first_name, last_name)
@@ -116,12 +132,12 @@ def auto_checkin(reservation_number, first_name, last_name):
             print("Flight information found, departing {} at {}".format(airport, date.strftime('%b %d %I:%M%p')))
             schedule_checkin(date, reservation_number, first_name, last_name)
 
-if __name__ == '__main__':
-    arguments = docopt(__doc__, version='Southwest Checkin 0.2')
 
-    # work work
-    reservation_number = arguments['CONFIRMATION_NUMBER']
-    first_name = arguments['FIRST_NAME']
-    last_name = arguments['LAST_NAME']
+if __name__ == '__main__':
+    args = get_args()
+
+    reservation_number = args.confirmation
+    first_name = args.first_name
+    last_name = args.last_name
 
     auto_checkin(reservation_number, first_name, last_name)
