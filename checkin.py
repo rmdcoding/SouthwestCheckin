@@ -18,7 +18,7 @@ USER_EXPERIENCE_KEY = 'AAAA3198-4545-46F4-9A05-BB3E868BEFF5'
 BASE_URL = 'https://mobile.southwest.com/api/'
 CHECKIN_EARLY_SECONDS = 5
 CHECKIN_INTERVAL_SECONDS = 0.25
-MAX_ATTEMPTS = 40
+MAX_ATTEMPTS = 100
 
 # Pulled from proxying the Southwest iOS App
 headers = {'Host': 'mobile.southwest.com', 'Content-Type': 'application/json', 'X-API-Key': API_KEY, 'X-User-Experience-Id': USER_EXPERIENCE_KEY, 'Accept': '*/*'}
