@@ -2,8 +2,6 @@
 
 from datetime import datetime
 from datetime import timedelta
-from dateutil.parser import parse
-from geopy import geocoders
 from math import trunc
 from tzlocal import get_localzone
 import pytz
@@ -23,6 +21,7 @@ MAX_ATTEMPTS = 40
 # Pulled from proxying the Southwest iOS App
 headers = {'Host': 'mobile.southwest.com', 'Content-Type': 'application/json', 'X-API-Key': API_KEY, 'X-User-Experience-Id': USER_EXPERIENCE_KEY, 'Accept': '*/*'}
 
+
 def get_args():
     parser = argparse.ArgumentParser(
         description='Southwest Automatic Checkin',
@@ -39,7 +38,7 @@ def get_args():
                         action='store',
                         help='Last name of passenger.')
 
-    parser.add_argument('-fn','--first_name',
+    parser.add_argument('-fn', '--first_name',
                         required=True,
                         action='store',
                         help='First name of passenger.')
@@ -111,7 +110,6 @@ def auto_checkin(reservation_number, first_name, last_name):
 
     # Get our local current time
     now = datetime.now(pytz.utc).astimezone(get_localzone())
-    tomorrow = now + timedelta(days=1)
 
     # find all eligible legs for checkin
     for leg in body['bounds']:

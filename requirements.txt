@@ -1,8 +1,6 @@
 datetime
-docopts
-geopy
+argparse
 pytest
-python-dateutil
 pytz
 requests
 requests_mock
