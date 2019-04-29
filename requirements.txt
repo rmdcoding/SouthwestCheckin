@@ -5,3 +5,4 @@ pytz
 requests
 requests_mock
 tzlocal
+uuid

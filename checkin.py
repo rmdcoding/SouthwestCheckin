@@ -10,13 +10,21 @@ import sys
 import time
 import json
 import argparse
+import uuid
 
-API_KEY = 'l7xxb3dcccc4a5674bada48fc6fcf0946bc8'
-USER_EXPERIENCE_KEY = 'AAAA3198-4545-46F4-9A05-BB3E868BEFF5'
+
 BASE_URL = 'https://mobile.southwest.com/api/'
 CHECKIN_EARLY_SECONDS = 5
 CHECKIN_INTERVAL_SECONDS = 0.25
 MAX_ATTEMPTS = 100
+USER_EXPERIENCE_KEY = str(uuid.uuid1()).upper()
+config_js = requests.get('https://mobile.southwest.com/js/config.js')
+if config_js.status_code == requests.codes.ok:
+    modded = config_js.text[config_js.text.index("API_KEY"):]
+    API_KEY = modded[modded.index(':') + 1:modded.index(',')].strip('"')
+else:
+    print("Not able to get API_KEY, aborting.")
+    sys.exit(-1)
 
 # Pulled from proxying the Southwest iOS App
 headers = {'Host': 'mobile.southwest.com', 'Content-Type': 'application/json', 'X-API-Key': API_KEY, 'X-User-Experience-Id': USER_EXPERIENCE_KEY, 'Accept': '*/*'}
