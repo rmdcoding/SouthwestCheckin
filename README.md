@@ -6,16 +6,13 @@ This python script checks your flight reservation with Southwest and then checks
 
 ## Requirements
 
-This script can either be ran directly on your host or within Docker.
+This script can either be ran directly on your host.
 
 ### Host
 
 * Python (should work with 2.x or 3.x thanks to @ratabora)
 * [pip](https://pypi.python.org/pypi/pip)
 
-### Docker
-
-* Docker (tested with 1.12.6)
 
 ## Setup
 
@@ -33,11 +30,3 @@ $ pip install -r requirements.txt
 $ python ./checkin.py -c CONFIRMATION_NUMBER -fn FIRST_NAME -ln LAST_NAME
 ```
 
-### Docker
-
-#### Usage
-
-```bash
-$ sudo docker build -t swcheckin ./
-$ sudo docker run -ti swcheckin /tmp/checkin.py -c CONFIRMATION_NUMBER -fn FIRST_NAME -ln LAST_NAME
-```
