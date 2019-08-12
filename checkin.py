@@ -76,7 +76,7 @@ def safe_request(url, body=None):
 
 def lookup_existing_reservation(number, first, last):
     # Find our existing record
-    url = "{}mobile-misc/v1/mobile-misc/page/view-reservation/{}?first-name={}&last-name={}".format(BASE_URL, number, first, last)
+    url = "{}mobile-air-booking/v1/mobile-air-booking/page/view-reservation/{}?first-name={}&last-name={}".format(BASE_URL, number, first, last)
     data = safe_request(url)
     return data['viewReservationViewPage']
 
