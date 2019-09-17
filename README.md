@@ -6,11 +6,11 @@ This python script checks your flight reservation with Southwest and then checks
 
 ## Requirements
 
-This script can either be ran directly on your host.
+This script should be ran on a host system that has Python3 installed.
 
 ### Host
 
-* Python (should work with 2.x or 3.x thanks to @ratabora)
+* Python3 
 * [pip](https://pypi.python.org/pypi/pip)
 
 
@@ -20,9 +20,12 @@ This script can either be ran directly on your host.
 
 #### Install Base Package Requirements
 
+#### Assuming `pip` is Python3 version (pip3)
 ```bash
 $ pip install -r requirements.txt
 ```
+
+
 
 #### Usage
 
