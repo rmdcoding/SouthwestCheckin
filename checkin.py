@@ -4,6 +4,7 @@ from datetime import datetime
 from datetime import timedelta
 from math import trunc
 from tzlocal import get_localzone
+
 import pytz
 import requests
 import sys
@@ -13,43 +14,60 @@ import argparse
 import uuid
 
 
-BASE_URL = 'https://mobile.southwest.com/api/'
+BASE_URL = "https://mobile.southwest.com/api/"
 CHECKIN_EARLY_SECONDS = 5
 CHECKIN_INTERVAL_SECONDS = 0.25
 MAX_ATTEMPTS = 100
 USER_EXPERIENCE_KEY = str(uuid.uuid1()).upper()
-config_js = requests.get('https://mobile.southwest.com/js/config.js')
+config_js = requests.get("https://mobile.southwest.com/js/config.js")
+
 if config_js.status_code == requests.codes.ok:
-    modded = config_js.text[config_js.text.index("API_KEY"):]
-    API_KEY = modded[modded.index(':') + 1:modded.index(',')].strip('"')
+    modded = config_js.text[config_js.text.index("API_KEY") :]
+    API_KEY = modded[modded.index(":") + 1 : modded.index(",")].strip('"')
+
 else:
     print("Not able to get API_KEY, aborting.")
     sys.exit(-1)
 
 # Pulled from proxying the Southwest iOS App
-headers = {'Host': 'mobile.southwest.com', 'Content-Type': 'application/json', 'X-API-Key': API_KEY, 'X-User-Experience-Id': USER_EXPERIENCE_KEY, 'Accept': '*/*'}
+headers = {
+    "Host": "mobile.southwest.com",
+    "Content-Type": "application/json",
+    "X-API-Key": API_KEY,
+    "X-User-Experience-Id": USER_EXPERIENCE_KEY,
+    "Accept": "*/*",
+}
 
 
 def get_args():
     parser = argparse.ArgumentParser(
-        description='Southwest Automatic Checkin',
-        epilog='example: /checkin.py -c XXXXXX -ln "smith" -fn "john"'
+        description="Southwest Automatic Checkin",
+        epilog='example: /checkin.py -c XXXXXX -ln "smith" -fn "john"',
     )
 
-    parser.add_argument('-c', '--confirmation',
-                        required=True,
-                        action='store',
-                        help='Flight confirmation/reservation number.')
+    parser.add_argument(
+        "-c",
+        "--confirmation",
+        required=True,
+        action="store",
+        help="Flight confirmation/reservation number.",
+    )
 
-    parser.add_argument('-ln', '--last_name',
-                        required=True,
-                        action='store',
-                        help='Last name of passenger.')
+    parser.add_argument(
+        "-ln",
+        "--last_name",
+        required=True,
+        action="store",
+        help="Last name of passenger.",
+    )
 
-    parser.add_argument('-fn', '--first_name',
-                        required=True,
-                        action='store',
-                        help='First name of passenger.')
+    parser.add_argument(
+        "-fn",
+        "--first_name",
+        required=True,
+        action="store",
+        help="First name of passenger.",
+    )
 
     args = parser.parse_args()
 
@@ -64,9 +82,13 @@ def safe_request(url, body=None):
         else:
             r = requests.get(url, headers=headers)
         data = r.json()
-        if 'httpStatusCode' in data and data['httpStatusCode'] in ['NOT_FOUND', 'BAD_REQUEST', 'FORBIDDEN']:
+        if "httpStatusCode" in data and data["httpStatusCode"] in [
+            "NOT_FOUND",
+            "BAD_REQUEST",
+            "FORBIDDEN",
+        ]:
             attempts += 1
-            print(data['message'])
+            print(data["message"])
             if attempts > MAX_ATTEMPTS:
                 sys.exit("Unable to get data, killing self")
             time.sleep(CHECKIN_INTERVAL_SECONDS)
@@ -76,23 +98,27 @@ def safe_request(url, body=None):
 
 def lookup_existing_reservation(number, first, last):
     # Find our existing record
-    url = "{}mobile-air-booking/v1/mobile-air-booking/page/view-reservation/{}?first-name={}&last-name={}".format(BASE_URL, number, first, last)
+    url = "{}mobile-air-booking/v1/mobile-air-booking/page/view-reservation/{}?first-name={}&last-name={}".format(
+        BASE_URL, number, first, last
+    )
     data = safe_request(url)
-    return data['viewReservationViewPage']
+    return data["viewReservationViewPage"]
 
 
 def get_checkin_data(number, first, last):
-    url = "{}mobile-air-operations/v1/mobile-air-operations/page/check-in/{}?first-name={}&last-name={}".format(BASE_URL, number, first, last)
+    url = "{}mobile-air-operations/v1/mobile-air-operations/page/check-in/{}?first-name={}&last-name={}".format(
+        BASE_URL, number, first, last
+    )
     data = safe_request(url)
-    return data['checkInViewReservationPage']
+    return data["checkInViewReservationPage"]
 
 
 def checkin(number, first, last):
     data = get_checkin_data(number, first, last)
-    info_needed = data['_links']['checkIn']
-    url = "{}mobile-air-operations{}".format(BASE_URL, info_needed['href'])
+    info_needed = data["_links"]["checkIn"]
+    url = "{}mobile-air-operations{}".format(BASE_URL, info_needed["href"])
     print("Attempting check-in...")
-    return safe_request(url, info_needed['body'])['checkInConfirmationPage']
+    return safe_request(url, info_needed["body"])["checkInConfirmationPage"]
 
 
 def schedule_checkin(flight_time, number, first, last):
@@ -105,12 +131,20 @@ def schedule_checkin(flight_time, number, first, last):
         # pretty print our wait time
         m, s = divmod(delta, 60)
         h, m = divmod(m, 60)
-        print("Too early to check in.  Waiting {} hours, {} minutes, {} seconds".format(trunc(h), trunc(m), s))
+        print(
+            "Too early to check in.  Waiting {} hours, {} minutes, {} seconds".format(
+                trunc(h), trunc(m), s
+            )
+        )
         time.sleep(delta)
     data = checkin(number, first, last)
-    for flight in data['flights']:
-        for doc in flight['passengers']:
-            print("{} got {}{}!".format(doc['name'], doc['boardingGroup'], doc['boardingPosition']))
+    for flight in data["flights"]:
+        for doc in flight["passengers"]:
+            print(
+                "{} got {}{}!".format(
+                    doc["name"], doc["boardingGroup"], doc["boardingPosition"]
+                )
+            )
 
 
 def auto_checkin(reservation_number, first_name, last_name):
@@ -120,26 +154,34 @@ def auto_checkin(reservation_number, first_name, last_name):
     now = datetime.now(pytz.utc).astimezone(get_localzone())
 
     # find all eligible legs for checkin
-    for leg in body['bounds']:
+    for leg in body["bounds"]:
         # calculate departure for this leg
-        airport = "{}, {}".format(leg['departureAirport']['name'], leg['departureAirport']['state'])
-        takeoff = "{} {}".format(leg['departureDate'], leg['departureTime'])
-        tzrequest = {'iata': leg['departureAirport']['code'],
-                     'country': 'ALL',
-                     'db': 'airports',
-                     'iatafilter': 'true',
-                     'action': 'SEARCH',
-                     'offset': '0'}
+        airport = "{}, {}".format(
+            leg["departureAirport"]["name"], leg["departureAirport"]["state"]
+        )
+        takeoff = "{} {}".format(leg["departureDate"], leg["departureTime"])
+        tzrequest = {
+            "iata": leg["departureAirport"]["code"],
+            "country": "ALL",
+            "db": "airports",
+            "iatafilter": "true",
+            "action": "SEARCH",
+            "offset": "0",
+        }
         tzresult = requests.post("https://openflights.org/php/apsearch.php", tzrequest)
-        airport_tz = pytz.timezone(json.loads(tzresult.text)['airports'][0]['tz_id'])
-        date = airport_tz.localize(datetime.strptime(takeoff, '%Y-%m-%d %H:%M'))
+        airport_tz = pytz.timezone(json.loads(tzresult.text)["airports"][0]["tz_id"])
+        date = airport_tz.localize(datetime.strptime(takeoff, "%Y-%m-%d %H:%M"))
         if date > now:
             # found a flight for checkin!
-            print("Flight information found, departing {} at {}".format(airport, date.strftime('%b %d %I:%M%p')))
+            print(
+                "Flight information found, departing {} at {}".format(
+                    airport, date.strftime("%b %d %I:%M%p")
+                )
+            )
             schedule_checkin(date, reservation_number, first_name, last_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = get_args()
 
     reservation_number = args.confirmation
