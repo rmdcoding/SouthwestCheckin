@@ -6,7 +6,9 @@ This python script checks your flight reservation with Southwest and then checks
 
 ## Requirements
 
+
 This script should be ran on a host system that has Python3 installed.
+
 
 ### Host
 
