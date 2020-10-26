@@ -36,6 +36,7 @@ headers = {
     "X-API-Key": API_KEY,
     "X-User-Experience-Id": USER_EXPERIENCE_KEY,
     "Accept": "*/*",
+    "X-Channel-ID": "MWEB"
 }
 
 
